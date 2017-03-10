@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="socket.io.min.js"></script>
+<script src="socketiop2p.min.js"></script>
+<script src="jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<div id='main'>
+	<img id="screenimg"></img>
+</div>
+<script>
+
+//var Socketiop2p = {};
+function init() {
+  var Socketiop2p = P2P;
+
+  var socket = io('http://localhost:3030');
+  var opts = {peerOpts: {trickle: false}, autoUpgrade: false}
+  var p2psocket = new Socketiop2p(socket, opts, function () {
+    //privateButton.disabled = false
+    //p2psocket.emit('peer-obj', 'Hello there. I am ' + p2psocket.peerId)
+  })
+
+  p2psocket.on('peer-msg', function (data) {
+  	console.log("Got a msg!!");
+  	console.log(data);
+  	//var main_node = document.getElementById("main");
+  	//var old_child = document.getElementById("screenimg"); //$('#screenimg')[0];
+  	$('#screenimg')[0].src = data.textVal;
+    //var img = document.createElement("IMG");
+    //img.id = "screenimg"
+    //img.src = data.textVal;
+	//$('#main')[0].replaceChild(old_child, img);
+	//$('#main')[0].appendChild(img);
+	//document.body.appendChild(img);
+	//main_node.removeChild(old_child);
+	//main_node.appendChild(img);
+
+  })
+}
+
+document.addEventListener('DOMContentLoaded', init, false)
+
+$( document ).ready(function() {
+    console.log( "ready!" );
+
+//document.addEventListener('DOMContentLoaded', init, false)
+
+
+
+});
+
+</script>
+</body>
+</html>

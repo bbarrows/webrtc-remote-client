@@ -1,0 +1,42 @@
+{
+  "key":"BBIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApGhnOPulDgztIQXX/js1zKkbFujZvg2w78AeJEXRNFnUYjV+m0ND4qKo6SUeFeH2saxpvBk87Dqlj9RIXsTjdKCRATXeGD5P+0S6Z6zh3lWw9n4ZKC7KQLJVW5ek9ymxW2ltHCLBUTV5RLgJk/NjqRtVwz/Fnfv8J8qJ2vbqsRyTo7FQljM19EMxF2Egt4I1Fe08ZPsztlQXKu0hq3/tlDBs+Hs2+YnoRIpVP2Kd3526JPRKKpYTnAa9CSiXJIWglKJIbF4QWTiTjbv7qIjJs9HFfPbWopvUQrbdrOOG32yuUA6cNl1ZFBPVDVjBsOBb1prhNvxSRigoSkBNLPf2sQIDAQAB",
+  "name": "WebRTC Remote Console",
+  "short_name": "WebRTC Remote Console",
+  "description": "WebRTC Remote Console",
+  "manifest_version": 2,
+  "version":"1.0.4",
+  "browser_action": {
+      "default_icon": "icons/icon128.png",
+      "default_title": "Remote Console"
+  },
+  "background": {
+    "scripts": ["socketiop2p.min.js", "socket.io.min.js", "jquery-3.1.1.min.js", "background.js"],
+    "persistent": false
+  },
+  "optional_permissions":[
+    "desktopCapture"
+  ],
+  "permissions":[
+    "tabCapture",
+    "debugger",
+    "sessions",
+    "windows",
+    "tabs",
+    "<all_urls>",
+    "*://*.okremote.com/*",
+    "storage",
+    "power",
+    "identity",
+    "gcm",
+    "system.display",
+    "system.storage",
+    "system.memory",
+    "system.cpu"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
