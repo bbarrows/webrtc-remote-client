@@ -10,33 +10,52 @@
 </div>
 <script>
 
+var clients = {};
+var roomName = "TempNameShouldBeHashOfEmail";
+
 //var Socketiop2p = {};
 function init() {
   var Socketiop2p = P2P;
 
   var socket = io('http://localhost:3030');
-  var opts = {peerOpts: {trickle: false}, autoUpgrade: false}
-  var p2psocket = new Socketiop2p(socket, opts, function () {
-    //privateButton.disabled = false
-    //p2psocket.emit('peer-obj', 'Hello there. I am ' + p2psocket.peerId)
-  })
+  var opts = {peerOpts: {trickle: false}, autoUpgrade: true}
 
-  p2psocket.on('peer-msg', function (data) {
-    console.log("Got a msg!!");
-    console.log(data);
-    //var main_node = document.getElementById("main");
-    //var old_child = document.getElementById("screenimg"); //$('#screenimg')[0];
-    $('#screenimg')[0].src = data.textVal;
-    //var img = document.createElement("IMG");
-    //img.id = "screenimg"
-    //img.src = data.textVal;
-    //$('#main')[0].replaceChild(old_child, img);
-    //$('#main')[0].appendChild(img);
-    //document.body.appendChild(img);
-    //main_node.removeChild(old_child);
-    //main_node.appendChild(img);
+  socket.on('connection', function(socket){
+    clients[socket.id] = socket;
+    socket.join(roomName);
+    //p2p(socket, null, roomName);
 
-  })
+    var p2psocket = new Socketiop2p(socket, null, roomName, function () {
+    //var p2psocket = new Socketiop2p(socket, opts, function () {
+      //privateButton.disabled = false
+      //p2psocket.emit('peer-obj', 'Hello there. I am ' + p2psocket.peerId)
+    })
+
+    p2psocket.on('ready', function(){
+      p2p.usePeerConnection = true;
+      console.log("Using peer connection, or set it to true..")
+    })
+
+    p2psocket.on('peer-msg', function (data) {
+      console.log("Got a msg!!");
+      console.log(data);
+      //var main_node = document.getElementById("main");
+      //var old_child = document.getElementById("screenimg"); //$('#screenimg')[0];
+      $('#screenimg')[0].src = data.textVal;
+      //var img = document.createElement("IMG");
+      //img.id = "screenimg"
+      //img.src = data.textVal;
+      //$('#main')[0].replaceChild(old_child, img);
+      //$('#main')[0].appendChild(img);
+      //document.body.appendChild(img);
+      //main_node.removeChild(old_child);
+      //main_node.appendChild(img);
+
+    })
+
+  });
+
+
 
 /*
   this._canvasElement.addEventListener('mousedown', this._handleMouseEvent.bind(this), false);
