@@ -1,11 +1,12 @@
 <html>
 <head>
 <script src="socket.io.min.js"></script>
-<script src="socketiop2p.min.js"></script>
+<script src="socketiop2p.js"></script>
 <script src="jquery-3.1.1.min.js"></script>
 </head>
 <body>
 <div id='main'>
+  <button type="button" id="startButton">Start</button>
   <img id="screenimg"></img>
 </div>
 <script>
@@ -15,46 +16,66 @@ var roomName = "TempNameShouldBeHashOfEmail";
 
 //var Socketiop2p = {};
 function init() {
+  console.log("Init called");
   var Socketiop2p = P2P;
 
   var socket = io('http://localhost:3030');
   var opts = {peerOpts: {trickle: false}, autoUpgrade: true}
 
+  var p2psocket = new Socketiop2p(socket, opts, function () {
+    console.log('In Socketiop2p callback')
+
+    //privateButton.disabled = false
+    //p2psocket.emit('peer-obj', 'Hello there. I am ' + p2psocket.peerId)
+  })
+
   socket.on('connection', function(socket){
-    clients[socket.id] = socket;
-    socket.join(roomName);
+    console.log('In Socketio connection event')
+    //clients[socket.id] = socket;
+    //socket.join(roomName);
     //p2p(socket, null, roomName);
 
-    var p2psocket = new Socketiop2p(socket, null, roomName, function () {
-    //var p2psocket = new Socketiop2p(socket, opts, function () {
-      //privateButton.disabled = false
-      //p2psocket.emit('peer-obj', 'Hello there. I am ' + p2psocket.peerId)
-    })
+    //var p2psocket = new Socketiop2p(socket, null, roomName, function () {
 
-    p2psocket.on('ready', function(){
-      p2p.usePeerConnection = true;
-      console.log("Using peer connection, or set it to true..")
-    })
 
-    p2psocket.on('peer-msg', function (data) {
-      console.log("Got a msg!!");
-      console.log(data);
-      //var main_node = document.getElementById("main");
-      //var old_child = document.getElementById("screenimg"); //$('#screenimg')[0];
-      $('#screenimg')[0].src = data.textVal;
-      //var img = document.createElement("IMG");
-      //img.id = "screenimg"
-      //img.src = data.textVal;
-      //$('#main')[0].replaceChild(old_child, img);
-      //$('#main')[0].appendChild(img);
-      //document.body.appendChild(img);
-      //main_node.removeChild(old_child);
-      //main_node.appendChild(img);
-
-    })
 
   });
 
+  p2psocket.on('ready', function(){
+    console.log('In Socketiop2p ready')
+    //p2p.usePeerConnection = true;
+    //console.log("Set peer connection to true")
+  })
+
+  // Start WebRTC specific code
+
+  p2psocket.on('upgrade', function(data){
+    console.log("Upgraded to WebRTC peer connection")
+    console.log(data);
+  });
+
+  p2psocket.on('peer-error', function(err){
+    console.log("Peer Error in upgrade to WebRTC peer connection");
+    console.log(err);
+  });
+
+  p2psocket.on('error', function(err){
+    console.log("General Error in connection");
+    console.log(err);
+  });
+
+  // End WebRTC
+
+  p2psocket.on('peer-meta', function (data) {
+    console.log("Got a peer-meta");
+    console.log(data);
+  })
+
+  p2psocket.on('peer-msg', function (data) {
+    console.log("Got a peer-msg");
+    //console.log(data.length);
+    $('#screenimg')[0].src = data;
+  })
 
 
 /*
@@ -71,16 +92,8 @@ function init() {
 */
 }
 
-document.addEventListener('DOMContentLoaded', init, false)
-
-$( document ).ready(function() {
-    console.log( "ready!" );
-
-//document.addEventListener('DOMContentLoaded', init, false)
-
-
-
-});
+  //document.addEventListener('DOMContentLoaded', init, false);
+  $("#startButton").click(init);
 
 </script>
 </body>
