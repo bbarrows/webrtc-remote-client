@@ -13,8 +13,37 @@
 
 var clients = {};
 var roomName = "TempNameShouldBeHashOfEmail";
+var p2psocket = {};
 
-//var Socketiop2p = {};
+function handleMouseEvent(event) {
+  p2psocket.emit('peer-event', event);
+}
+
+function handleContextMenuEvent(event) {
+  p2psocket.emit('peer-event', event);
+}
+
+function handleKeyEvent(event) {
+  p2psocket.emit('peer-event', event);
+}
+
+function handleBlurEvent(event) {
+  p2psocket.emit('peer-event', event);
+}
+
+function setupEventHandlers() {
+  document.addEventListener('mousedown', handleMouseEvent, false);
+  document.addEventListener('mouseup', handleMouseEvent, false);
+  document.addEventListener('mousemove', handleMouseEvent, false);
+  document.addEventListener('mousewheel', handleMouseEvent, false);
+  document.addEventListener('click', handleMouseEvent, false);
+  document.addEventListener('contextmenu', handleContextMenuEvent, false);
+  document.addEventListener('keydown', handleKeyEvent, false);
+  document.addEventListener('keyup', handleKeyEvent, false);
+  document.addEventListener('keypress', handleKeyEvent, false);
+  document.addEventListener('blur', handleBlurEvent, false);
+}
+
 function init() {
   console.log("Init called");
   var Socketiop2p = P2P;
@@ -22,7 +51,7 @@ function init() {
   var socket = io('http://localhost:3030');
   var opts = {peerOpts: {trickle: false}, autoUpgrade: true}
 
-  var p2psocket = new Socketiop2p(socket, opts, function () {
+  p2psocket = new Socketiop2p(socket, opts, function () {
     console.log('In Socketiop2p callback')
 
     //privateButton.disabled = false
@@ -51,15 +80,19 @@ function init() {
 
   p2psocket.on('upgrade', function(data){
     console.log("Upgraded to WebRTC peer connection")
+    // TODO Add logic to start listening for on peer-meta here
+    // Add a variable that says good to start emitting
     console.log(data);
   });
 
   p2psocket.on('peer-error', function(err){
+    // TODO Add logic to start listening for on peer-meta here which will use websockets
     console.log("Peer Error in upgrade to WebRTC peer connection");
     console.log(err);
   });
 
   p2psocket.on('error', function(err){
+    // TODO Show an error msg, couldnt connect to either
     console.log("General Error in connection");
     console.log(err);
   });
@@ -73,23 +106,12 @@ function init() {
 
   p2psocket.on('peer-msg', function (data) {
     console.log("Got a peer-msg");
-    //console.log(data.length);
-    $('#screenimg')[0].src = data;
+    //console.log(data);
+    $('#screenimg')[0].src = new TextDecoder('utf-8').decode(data);//data;
   })
 
-
-/*
-  this._canvasElement.addEventListener('mousedown', this._handleMouseEvent.bind(this), false);
-  this._canvasElement.addEventListener('mouseup', this._handleMouseEvent.bind(this), false);
-  this._canvasElement.addEventListener('mousemove', this._handleMouseEvent.bind(this), false);
-  this._canvasElement.addEventListener('mousewheel', this._handleMouseEvent.bind(this), false);
-  this._canvasElement.addEventListener('click', this._handleMouseEvent.bind(this), false);
-  this._canvasElement.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
-  this._canvasElement.addEventListener('keydown', this._handleKeyEvent.bind(this), false);
-  this._canvasElement.addEventListener('keyup', this._handleKeyEvent.bind(this), false);
-  this._canvasElement.addEventListener('keypress', this._handleKeyEvent.bind(this), false);
-  this._canvasElement.addEventListener('blur', this._handleBlurEvent.bind(this), false);
-*/
+  // TODO Maybe only add these after first peer-msg screenshot??
+  setupEventHandlers();
 }
 
   //document.addEventListener('DOMContentLoaded', init, false);
