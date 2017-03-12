@@ -15,37 +15,142 @@ var clients = {};
 var roomName = "TempNameShouldBeHashOfEmail";
 var p2psocket = {};
 
+var ignoredAttrs = ['currentTarget', 'fromElement', 'target', 'path', 'relatedTarget', 'sourceCapabilities',
+                    'toElement', 'view', 'srcElement', 'view'];
+
+// Too much a pain , have to white list event attrs like below
+function serializeEvent2(event) {
+  try {
+  let ev_obj = {};
+  for (k in event) {
+    if (typeof 'event[k]' === 'string' || typeof 'event[k]' === 'number' && !(k in ignoredAttrs)){
+      ev_obj[k] = event[k];
+    }
+  }
+  return JSON.stringify(ev_obj);
+} catch (e) {
+  debugger;
+}
+}
+
+// http://stackoverflow.com/questions/11547672/how-to-stringify-event-object
+var serializeEvent = function(e) {
+  var o = {};
+  if (e) {
+    o = {
+      eventName: e.toString(),
+      altKey: e.altKey,
+      bubbles: e.bubbles,
+      button: e.button,
+      buttons: e.buttons,
+      cancelBubble: e.cancelBubble,
+      cancelable: e.cancelable,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      composed: e.composed,
+      ctrlKey: e.ctrlKey,
+      //currentTarget: e.currentTarget ? e.currentTarget.outerHTML : null,
+      defaultPrevented: e.defaultPrevented,
+      detail: e.detail,
+      eventPhase: e.eventPhase,
+      //fromElement: e.fromElement ? e.fromElement.outerHTML : null,
+      isTrusted: e.isTrusted,
+      layerX: e.layerX,
+      layerY: e.layerY,
+      metaKey: e.metaKey,
+      movementX: e.movementX,
+      movementY: e.movementY,
+      offsetX: e.offsetX,
+      offsetY: e.offsetY,
+      pageX: e.pageX,
+      pageY: e.pageY,
+      //path: pathToSelector(e.path && e.path.length ? e.path[0] : null),
+      //relatedTarget: e.relatedTarget ? e.relatedTarget.outerHTML : null,
+      returnValue: e.returnValue,
+      screenX: e.screenX,
+      screenY: e.screenY,
+      shiftKey: e.shiftKey,
+      //sourceCapabilities: e.sourceCapabilities ? e.sourceCapabilities.toString() : null,
+      //target: e.target ? e.target.outerHTML : null,
+      timeStamp: e.timeStamp,
+      //toElement: e.toElement ? e.toElement.outerHTML : null,
+      type: e.type,
+      //view: e.view ? e.view.toString() : null,
+      which: e.which,
+      x: e.x,
+      y: e.y,
+      // For Keyboard
+      code: e.code ? e.code : null,
+      key: e.key ? e.key : null,
+      shiftKey: e.shiftKey ? e.shiftKey : null, //TODO altKey
+      keyCode: e.keyCode ? e.keyCode : null,
+      charCode: e.charCode ? e.charCode : null,
+      keyIdentifier: e.keyIdentifier ? e.keyIdentifier : null
+
+    };
+  }
+
+  return JSON.stringify(o);
+};
+
+function handleGeneralEvent(event) {
+  console.log("Sent general event")
+  console.log(serializeEvent(event));
+  let arr = new TextEncoder('utf-8').encode(serializeEvent(event)).buffer;
+  p2psocket.emit('peer-event', arr);
+}
+
 function handleMouseEvent(event) {
-  p2psocket.emit('peer-event', event);
+  console.log("Sent mouse event")
+  let arr = new TextEncoder('utf-8').encode(serializeEvent(event)).buffer;
+  p2psocket.emit('peer-event', arr);
 }
 
 function handleContextMenuEvent(event) {
-  p2psocket.emit('peer-event', event);
+  //p2psocket.emit('peer-event', serializeEvent(event));
 }
 
 function handleKeyEvent(event) {
-  p2psocket.emit('peer-event', event);
+  //p2psocket.emit('peer-event', serializeEvent(event));
 }
 
 function handleBlurEvent(event) {
-  p2psocket.emit('peer-event', event);
+  //p2psocket.emit('peer-event', serializeEvent(event));
 }
 
 function setupEventHandlers() {
-  document.addEventListener('mousedown', handleMouseEvent, false);
-  document.addEventListener('mouseup', handleMouseEvent, false);
-  document.addEventListener('mousemove', handleMouseEvent, false);
-  document.addEventListener('mousewheel', handleMouseEvent, false);
-  document.addEventListener('click', handleMouseEvent, false);
+  // Use $('#screenimg') instead of document ??
+  console.log('In SetupEventHandlers')
+  document.addEventListener('mousedown', handleGeneralEvent);
+  document.addEventListener('mouseup', handleGeneralEvent);
+  document.addEventListener('mousemove', handleGeneralEvent);
+  document.addEventListener('mousewheel', handleGeneralEvent);
+  document.addEventListener('click', handleGeneralEvent);
+  document.addEventListener('contextmenu', handleGeneralEvent);
+  document.addEventListener('keydown', handleGeneralEvent);
+  document.addEventListener('keyup', handleGeneralEvent);
+  document.addEventListener('keypress', handleGeneralEvent);
+  document.addEventListener('blur', handleGeneralEvent);
+  /*
+  handleGeneralEvent
+  document.addEventListener('mousedown', handleMouseEvent);
+  document.addEventListener('mouseup', handleMouseEvent);
+  document.addEventListener('mousemove', handleMouseEvent);
+  document.addEventListener('mousewheel', handleMouseEvent);
+  document.addEventListener('click', handleMouseEvent);
   document.addEventListener('contextmenu', handleContextMenuEvent, false);
   document.addEventListener('keydown', handleKeyEvent, false);
   document.addEventListener('keyup', handleKeyEvent, false);
   document.addEventListener('keypress', handleKeyEvent, false);
   document.addEventListener('blur', handleBlurEvent, false);
+  */
 }
 
 function init() {
   console.log("Init called");
+
+  $("#startButton").hide();
+
   var Socketiop2p = P2P;
 
   var socket = io('http://localhost:3030');
@@ -80,6 +185,8 @@ function init() {
 
   p2psocket.on('upgrade', function(data){
     console.log("Upgraded to WebRTC peer connection")
+    p2psocket.usePeerConnection = true;
+
     // TODO Add logic to start listening for on peer-meta here
     // Add a variable that says good to start emitting
     console.log(data);
@@ -95,6 +202,8 @@ function init() {
     // TODO Show an error msg, couldnt connect to either
     console.log("General Error in connection");
     console.log(err);
+
+    $("#startButton").show();
   });
 
   // End WebRTC
