@@ -12,26 +12,8 @@
 <script>
 
 var clients = {};
-var roomName = "TempNameShouldBeHashOfEmail";
 var p2psocket = {};
 
-var ignoredAttrs = ['currentTarget', 'fromElement', 'target', 'path', 'relatedTarget', 'sourceCapabilities',
-                    'toElement', 'view', 'srcElement', 'view'];
-
-// Too much a pain , have to white list event attrs like below
-function serializeEvent2(event) {
-  try {
-  let ev_obj = {};
-  for (k in event) {
-    if (typeof 'event[k]' === 'string' || typeof 'event[k]' === 'number' && !(k in ignoredAttrs)){
-      ev_obj[k] = event[k];
-    }
-  }
-  return JSON.stringify(ev_obj);
-} catch (e) {
-  debugger;
-}
-}
 
 // http://stackoverflow.com/questions/11547672/how-to-stringify-event-object
 var serializeEvent = function(e) {
@@ -85,8 +67,11 @@ var serializeEvent = function(e) {
       shiftKey: e.shiftKey ? e.shiftKey : null, //TODO altKey
       keyCode: e.keyCode ? e.keyCode : null,
       charCode: e.charCode ? e.charCode : null,
-      keyIdentifier: e.keyIdentifier ? e.keyIdentifier : null
-
+      keyIdentifier: e.keyIdentifier ? e.keyIdentifier : null,
+      wheelDeltaX: e.wheelDeltaX ? e.wheelDeltaX : null,
+      wheelDeltaY: e.wheelDeltaY ? e.wheelDeltaY : null,
+      deltaX: e.deltaX ? e.deltaX : null,
+      deltaY: e.deltaY ? e.deltaY : null
     };
   }
 
@@ -94,29 +79,22 @@ var serializeEvent = function(e) {
 };
 
 function handleGeneralEvent(event) {
+
+  // To prevent from dragging the image around and stuff:
+  // preventDefault(), stopPropagation(), stopImmediatePropagation(), return false, all these 4 methods are used to cancel the event or prevent it from bubbling. some info here :
+  // http://www.markupjavascript.com/2013/10/event-bubbling-how-to-prevent-it.html
+  //event.stopPropagation();
+  event.stopImmediatePropagation();
+  event.preventDefault();
+
   console.log("Sent general event")
   console.log(serializeEvent(event));
   let arr = new TextEncoder('utf-8').encode(serializeEvent(event)).buffer;
   p2psocket.emit('peer-event', arr);
+
+  return false; // This does both stopPropogation and preventDefault I believe
 }
 
-function handleMouseEvent(event) {
-  console.log("Sent mouse event")
-  let arr = new TextEncoder('utf-8').encode(serializeEvent(event)).buffer;
-  p2psocket.emit('peer-event', arr);
-}
-
-function handleContextMenuEvent(event) {
-  //p2psocket.emit('peer-event', serializeEvent(event));
-}
-
-function handleKeyEvent(event) {
-  //p2psocket.emit('peer-event', serializeEvent(event));
-}
-
-function handleBlurEvent(event) {
-  //p2psocket.emit('peer-event', serializeEvent(event));
-}
 
 function setupEventHandlers() {
   // Use $('#screenimg') instead of document ??
@@ -131,19 +109,7 @@ function setupEventHandlers() {
   document.addEventListener('keyup', handleGeneralEvent);
   document.addEventListener('keypress', handleGeneralEvent);
   document.addEventListener('blur', handleGeneralEvent);
-  /*
-  handleGeneralEvent
-  document.addEventListener('mousedown', handleMouseEvent);
-  document.addEventListener('mouseup', handleMouseEvent);
-  document.addEventListener('mousemove', handleMouseEvent);
-  document.addEventListener('mousewheel', handleMouseEvent);
-  document.addEventListener('click', handleMouseEvent);
-  document.addEventListener('contextmenu', handleContextMenuEvent, false);
-  document.addEventListener('keydown', handleKeyEvent, false);
-  document.addEventListener('keyup', handleKeyEvent, false);
-  document.addEventListener('keypress', handleKeyEvent, false);
-  document.addEventListener('blur', handleBlurEvent, false);
-  */
+
 }
 
 function init() {
@@ -159,19 +125,10 @@ function init() {
   p2psocket = new Socketiop2p(socket, opts, function () {
     console.log('In Socketiop2p callback')
 
-    //privateButton.disabled = false
-    //p2psocket.emit('peer-obj', 'Hello there. I am ' + p2psocket.peerId)
   })
 
   socket.on('connection', function(socket){
     console.log('In Socketio connection event')
-    //clients[socket.id] = socket;
-    //socket.join(roomName);
-    //p2p(socket, null, roomName);
-
-    //var p2psocket = new Socketiop2p(socket, null, roomName, function () {
-
-
 
   });
 
